@@ -18,7 +18,7 @@ public class ServletClassMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendText("servlet class ").appendValue(servlet.getName());
+		d.appendText("servlet class equal to ").appendValue(servlet.getName());
 	}
 	
 	@Override

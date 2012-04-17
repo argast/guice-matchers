@@ -14,7 +14,7 @@ public class UriMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendText("path matching uri: ").appendValue(uri);
+		d.appendText("binding matching uri: ").appendValue(uri);
 	}
 	
 	@Override

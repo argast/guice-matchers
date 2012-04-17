@@ -1,7 +1,5 @@
 package com.github.argast.guice.matchers;
 
-import static junit.framework.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +9,6 @@ import javax.servlet.http.HttpServlet;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.AllOf;
-import org.hamcrest.core.AnyOf;
-import org.hamcrest.core.IsEqual;
 import org.junit.Assert;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
@@ -65,67 +61,80 @@ public class GuiceServletMatchers {
 		}
 		
 		public void on(Injector injector) {
-			List<Matcher<?>> matchers = new ArrayList<Matcher<?>>();
-			
-			
-			for (Binding<?> b: injector.getBindings().values()) {
-				matchers.add(new SingleBindingMatcher(b));
-			}
-			
-			Assert.assertThat(this.matchers, AnyOf.anyOf(matchers));
+			Assert.assertThat(new InjectorWrapper(injector), new InjectorWrapperMatcher(matchers));
 		}
 	}
 	
-	private static class SingleBindingMatcher extends TypeSafeMatcher<List<Matcher<?>>> {
+	private static class InjectorWrapperMatcher extends TypeSafeMatcher<InjectorWrapper> {
 
-		private final Binding<?> binding;
-
-		public SingleBindingMatcher(Binding<?> binding) {
-			this.binding = binding;
-		}
-		
-		public void describeTo(Description description) {
-		}
-		
-		@Override
-		public boolean matchesSafely(List<Matcher<?>> matchers) {
-			return this.binding.acceptTargetVisitor(new Visitor(matchers));
-		}
-	}
-	
-	private static class Visitor extends DefaultBindingTargetVisitor<Object, Boolean> implements ServletModuleTargetVisitor<Object, Boolean> {
-		
 		private final List<Matcher<?>> matchers;
 
-		public Visitor(List<Matcher<?>> matchers) {
+		public InjectorWrapperMatcher(List<Matcher<?>> matchers) {
 			this.matchers = matchers;
 		}
 		
+		public void describeTo(Description description) {
+			description.appendText("\nBinding matching conditions:\n");
+			for (Matcher<?> matcher: matchers) {
+				description.appendText(" - ").appendDescriptionOf(matcher).appendText("\n");
+			}
+		}
+		
 		@Override
-		protected Boolean visitOther(Binding<? extends Object> binding) {
-			return false;
+		public boolean matchesSafely(InjectorWrapper injector) {
+			boolean match = false;
+			for (ServletModuleBinding b: injector.getServletBindings()) {
+				match |= AllOf.allOf(matchers).matches(b);
+			}
+			return match;
+		}
+	}
+	
+	private static class InjectorWrapper {
+
+		private List<ServletModuleBinding> servletBindings = new ArrayList<ServletModuleBinding>();
+		
+		public InjectorWrapper(Injector injector) {
+			for (Binding<?> b: injector.getBindings().values()) {
+				ServletModuleBinding servletModuleBinding = b.acceptTargetVisitor(new ServletModuleBindingReturningVisitor());
+				if (servletModuleBinding != null) {
+					servletBindings.add(servletModuleBinding);
+				}
+			}
 		}
 		
-		public Boolean visit(InstanceServletBinding binding) {
-			return matchAll(binding);
+		public List<ServletModuleBinding> getServletBindings() {
+			return servletBindings;
 		}
 		
-		public Boolean visit(LinkedServletBinding binding) {
-			return matchAll(binding);
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("current servlet bindings:\n");
+			for (ServletModuleBinding b: servletBindings) {
+				sb.append(b).append('\n');
+			}
+			return sb.toString();
+		}
+	}
+	
+	private static class ServletModuleBindingReturningVisitor extends DefaultBindingTargetVisitor<Object, ServletModuleBinding> implements ServletModuleTargetVisitor<Object, ServletModuleBinding> {
+		
+		public ServletModuleBinding visit(InstanceServletBinding binding) {
+			return binding;
 		}
 		
-		public Boolean visit(LinkedFilterBinding binding) {
-			return matchAll(binding);
+		public ServletModuleBinding visit(LinkedServletBinding binding) {
+			return binding;
+		}
+		
+		public ServletModuleBinding visit(LinkedFilterBinding binding) {
+			return binding;
 		}
 
-		public Boolean visit(InstanceFilterBinding binding) {
-			return matchAll(binding);
+		public ServletModuleBinding visit(InstanceFilterBinding binding) {
+			return binding;
 		}
 		
-		private <T extends ServletModuleBinding> boolean matchAll(ServletModuleBinding binding) {
-			Matcher<ServletModuleBinding>[] a = matchers.toArray(new Matcher[matchers.size()]);
-//			Assert.assertThat(binding, AllOf.allOf(a));
-			return AllOf.allOf(a).matches(binding);
-		}
 	}
 }

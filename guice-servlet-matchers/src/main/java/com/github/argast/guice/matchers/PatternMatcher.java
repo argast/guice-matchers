@@ -14,7 +14,7 @@ public class PatternMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendText("pattern ").appendValue(pattern);
+		d.appendText("pattern equal to ").appendValue(pattern);
 	}
 	
 	@Override

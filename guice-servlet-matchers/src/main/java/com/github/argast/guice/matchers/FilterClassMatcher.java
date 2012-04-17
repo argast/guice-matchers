@@ -18,7 +18,7 @@ public class FilterClassMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendValue(filter);
+		d.appendText("filter class equal to ").appendValue(filter.getName());
 	}
 	
 	@Override
