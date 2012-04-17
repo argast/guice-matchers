@@ -1,5 +1,7 @@
 package com.github.argast.guice.matchers;
 
+import java.util.Map;
+
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
@@ -16,11 +18,12 @@ public class InitParamMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendValue(key).appendValue(value);
+		d.appendText("binding containing init parameter: ").appendValue(key).appendText(" = ").appendValue(value);
 	}
 	
 	@Override
 	public boolean matchesSafely(ServletModuleBinding binding) {
-		return binding.getInitParams().containsKey(key) && binding.getInitParams().get(key).equals(value);
+		Map<String, String> initParams = binding.getInitParams();
+		return initParams != null && initParams.containsKey(key) && initParams.get(key).equals(value);
 	}
 }
