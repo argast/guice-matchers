@@ -18,24 +18,21 @@ public class UriMatcherTest {
 
 	private static final String TEST_URI = "some/uri";
 	
-	private ServletModuleBinding binding = mock(ServletModuleBinding.class);
-
 	@Test
 	public void testThatMatchesUriIsInvoked() throws Exception {
+		ServletModuleBinding binding = bindingThatReturns(false);
 		createMatcherForUri(null).matchesSafely(binding);
 		verify(binding).matchesUri(anyString());
 	}
 	
 	@Test
-	public void testThatMatcherReturnsTrueUriMatches() throws Exception {
-		when(binding.matchesUri(TEST_URI)).thenReturn(true);
-		assertTrue(createMatcherForUri(TEST_URI).matchesSafely(binding));
+	public void testThatMatcherReturnsTrueWhenUriMatches() throws Exception {
+		assertTrue(matchingResultOf(bindingThatReturns(true)));
 	}
 	
 	@Test
 	public void testThatMatcherReturnsFalseWhenUriDoesntMatch() throws Exception {
-		when(binding.matchesUri(TEST_URI)).thenReturn(false);
-		assertFalse(createMatcherForUri(TEST_URI).matchesSafely(binding));
+		assertFalse(matchingResultOf(bindingThatReturns(false)));
 	}
 
 	@Test
@@ -48,6 +45,17 @@ public class UriMatcherTest {
 	private UriMatcher createMatcherForUri(String uri) {
 		return new UriMatcher(uri);
 	}
+	
+	private ServletModuleBinding bindingThatReturns(boolean matchesUri) {
+		ServletModuleBinding binding = mock(ServletModuleBinding.class);
+		when(binding.matchesUri(TEST_URI)).thenReturn(matchesUri);
+		return binding;
+	}
+
+	private boolean matchingResultOf(ServletModuleBinding binding) {
+		return createMatcherForUri(TEST_URI).matchesSafely(binding);
+	}
+
 }
 
 
