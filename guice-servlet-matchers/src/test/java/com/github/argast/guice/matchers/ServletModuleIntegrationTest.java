@@ -1,16 +1,12 @@
 package com.github.argast.guice.matchers;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Vector;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -24,6 +20,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.ServletModule;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.*; 
 
 public class ServletModuleIntegrationTest {
 
@@ -34,72 +31,82 @@ public class ServletModuleIntegrationTest {
 		public void init(FilterConfig filterConfig) throws ServletException {}
 	}
 	
-	private static class FakeServlet extends HttpServlet {
-		
-		public FakeServlet() {
-			System.out.println("bb");
-			// TODO Auto-generated constructor stub
-		}
-		
-		@Override
-		public void init(ServletConfig config) throws ServletException {
-			System.out.println("aa");
-			super.init(config);
-		}
-	}
+	@SuppressWarnings("serial")
+	private static class FakeServlet extends HttpServlet {}
 	
 	private Injector injector = Guice.createInjector(new ServletModule() {
 		protected void configureServlets() {
-			bind(FakeServlet.class);
-			serve("/test/*").with(FakeServlet.class);
-			serve("/other/*").with(FakeServlet.class, Collections.singletonMap("key", "value"));
+			bind(FakeServlet.class).asEagerSingleton();
+			serve("/test/*", "/second/test/*").with(FakeServlet.class, Collections.singletonMap("key", "value"));
 			
-			filter("/to/filter/*").through(FakeFilter.class);
+			bind(FakeFilter.class).asEagerSingleton();
+			filter("/to/filter/*").through(FakeFilter.class, Collections.singletonMap("filterKey", "filterValue"));
 		};
 	});
 	
 	@Before
 	public void setUp() throws Exception {
-		injector.getInstance(GuiceFilter.class).init(new FilterConfig() {
-			
-			public ServletContext getServletContext() {
-				return null;
-			}
-			
-			public Enumeration getInitParameterNames() {
-				return new Vector().elements();
-			}
-			
-			public String getInitParameter(String name) {
-				// TODO Auto-generated method stub
-				return "";
-			}
-			
-			public String getFilterName() {
-				// TODO Auto-generated method stub
-				return "guice-filter";
-			}
-		});
+		// init guice filter to force loading of servlets and filters
+		injector.getInstance(GuiceFilter.class).init(new DummyFilterConfig());
 	}
 	
 	@Test
 	public void testThatUriIsServed() throws Exception {
-		GuiceServletMatchers.assertServlet(HttpServlet.class).serves("/test/a/*").on(injector);
+		assertServlet(FakeServlet.class).serves("/test/uri/*").on(injector);
+	}
+	
+	@Test
+	public void testThatSecondUriIsServed() throws Exception {
+		assertServlet(FakeServlet.class).serves("/second/test/uri/*").on(injector);
 	}
 	
 	@Test
 	public void testThatPatternIsServed() throws Exception {
-		GuiceServletMatchers.assertServlet(HttpServlet.class).servesPattern("/test/*").on(injector);
+		assertServlet(FakeServlet.class).servesPattern("/test/*").on(injector);
+	}
+
+	@Test
+	public void testThatSecondPatternIsServed() throws Exception {
+		assertServlet(FakeServlet.class).servesPattern("/second/test/*").on(injector);
 	}
 	
 	@Test
 	public void testThatUriIsFiltered() throws Exception {
-		GuiceServletMatchers.assertFilter(FakeFilter.class).filters("/to/filter/*").on(injector);
+		assertFilter(FakeFilter.class).filters("/to/filter/*").on(injector);
 	}
 	
 	@Test
-	public void testThatServletIsInitializeWithParam() throws Exception {
-		GuiceServletMatchers.assertServlet(FakeServlet.class).hasInitParameter("key", "value").on(injector);
+	public void testThatServletIsInitializedWithParam() throws Exception {
+		assertServlet(FakeServlet.class).hasInitParameter("key", "value").on(injector);
+	}
+	
+	@Test
+	public void testThatFilterIsInitializedWithParameter() throws Exception {
+		assertFilter(FakeFilter.class).hasInitParameter("filterKey", "filterValue").on(injector);
+	}
+	
+	@Test(expected = AssertionError.class)
+	public void testThatAssertionErrorIsThrownIfTestChecksForUnusedParameter() throws Exception {
+		assertFilter(FakeFilter.class).hasInitParameter("noSuchKey", "noSuchValue").on(injector);
+	}
+	
+
+	private final class DummyFilterConfig implements FilterConfig {
+		public ServletContext getServletContext() {
+			return null;
+		}
+
+		public Enumeration getInitParameterNames() {
+			return null;
+		}
+
+		public String getInitParameter(String name) {
+			return null;
+		}
+
+		public String getFilterName() {
+			return "guice-filter";
+		}
 	}
 	
 }
