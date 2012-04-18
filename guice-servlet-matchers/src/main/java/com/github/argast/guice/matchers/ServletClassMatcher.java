@@ -2,36 +2,27 @@ package com.github.argast.guice.matchers;
 
 import javax.servlet.http.HttpServlet;
 
-import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
-import com.google.inject.servlet.InstanceServletBinding;
 import com.google.inject.servlet.LinkedServletBinding;
 import com.google.inject.servlet.ServletModuleBinding;
 
-public class ServletClassMatcher extends TypeSafeMatcher<ServletModuleBinding> {
-
-	private final Class<? extends HttpServlet> servlet;
+public class ServletClassMatcher extends AbstractClassMatcher {
 
 	public ServletClassMatcher(Class<? extends HttpServlet> servlet) {
-		this.servlet = servlet;
+		super(servlet);
 	}
-	
-	public void describeTo(Description d) {
-		d.appendText("servlet class equal to ").appendValue(servlet.getName());
+
+	@Override
+	protected boolean correctBindingType(ServletModuleBinding binding) {
+		return binding instanceof LinkedServletBinding;
 	}
 	
 	@Override
-	public boolean matchesSafely(ServletModuleBinding binding) {
-		return servlet.equals(getServletClass(binding));
+	protected Class<?> extractClass(ServletModuleBinding binding) {
+		return ((LinkedServletBinding)binding).getLinkedKey().getTypeLiteral().getRawType();
 	}
-
-	private Class<?> getServletClass(ServletModuleBinding binding) {
-		if (binding instanceof LinkedServletBinding) {
-			return ((LinkedServletBinding)binding).getLinkedKey().getTypeLiteral().getRawType();
-		} else if (binding instanceof InstanceServletBinding) {
-			return ((InstanceServletBinding)binding).getServletInstance().getClass();
-		}
-		return null;
+	
+	@Override
+	protected String initialDescription() {
+		return "servlet";
 	}
 }
