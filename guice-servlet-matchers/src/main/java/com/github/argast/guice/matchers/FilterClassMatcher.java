@@ -23,15 +23,6 @@ public class FilterClassMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	
 	@Override
 	public boolean matchesSafely(ServletModuleBinding binding) {
-		return filter.equals(getServletClass(binding));
-	}
-
-	private Class<?> getServletClass(ServletModuleBinding binding) {
-		if (binding instanceof LinkedFilterBinding) {
-			return ((LinkedFilterBinding)binding).getLinkedKey().getTypeLiteral().getRawType();
-		} else if (binding instanceof InstanceFilterBinding) {
-			return ((InstanceFilterBinding)binding).getFilterInstance().getClass();
-		}
-		return null;
+		return binding instanceof LinkedFilterBinding && filter.equals(((LinkedFilterBinding)binding).getLinkedKey().getTypeLiteral().getRawType());
 	}
 }
