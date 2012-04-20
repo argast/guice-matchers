@@ -2,6 +2,7 @@ package com.github.argast.guice.matchers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
@@ -62,6 +63,11 @@ public class GuiceServletMatchers {
 		
 		public void on(Injector injector) {
 			Assert.assertThat(new InjectorWrapper(injector), new InjectorWrapperMatcher(matchers));
+		}
+
+		public MatcherBuilder hasInitParameters(Map<String, String> params) {
+			matchers.add(new InitParamsMatcher(params));
+			return this;
 		}
 	}
 	

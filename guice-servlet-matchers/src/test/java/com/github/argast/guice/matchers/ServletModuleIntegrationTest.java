@@ -3,6 +3,8 @@ package com.github.argast.guice.matchers;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -21,9 +23,15 @@ import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.ServletModule;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.*; 
+import static org.junit.Assert.*;
 
 public class ServletModuleIntegrationTest {
 
+	private static final Map<String, String> PARAMS = new HashMap<String, String>() {{
+		put("key1", "value1");
+		put("key2", "value2");
+	}};
+	
 	private static class FakeFilter implements Filter {
 		public void destroy() {}
 		public void doFilter(ServletRequest request, ServletResponse response,
@@ -37,7 +45,7 @@ public class ServletModuleIntegrationTest {
 	private Injector injector = Guice.createInjector(new ServletModule() {
 		protected void configureServlets() {
 			bind(FakeServlet.class).asEagerSingleton();
-			serve("/test/*", "/second/test/*").with(FakeServlet.class, Collections.singletonMap("key", "value"));
+			serve("/test/*", "/second/test/*").with(FakeServlet.class, PARAMS);
 			
 			bind(FakeFilter.class).asEagerSingleton();
 			filter("/to/filter/*").through(FakeFilter.class, Collections.singletonMap("filterKey", "filterValue"));
@@ -77,7 +85,17 @@ public class ServletModuleIntegrationTest {
 	
 	@Test
 	public void testThatServletIsInitializedWithParam() throws Exception {
-		assertServlet(FakeServlet.class).hasInitParameter("key", "value").on(injector);
+		assertServlet(FakeServlet.class).hasInitParameter("key1", "value1").on(injector);
+	}
+	
+	@Test
+	public void testThatServletIsInitializedWithParams() throws Exception {
+		assertServlet(FakeServlet.class).hasInitParameters(PARAMS).on(injector);
+	}
+
+	@Test(expected = AssertionError.class)
+	public void testThatServletIsNotInitializedWithParams() throws Exception {
+		assertServlet(FakeServlet.class).hasInitParameters(Collections.singletonMap("key1", "value1")).on(injector);
 	}
 	
 	@Test
@@ -108,5 +126,4 @@ public class ServletModuleIntegrationTest {
 			return "guice-filter";
 		}
 	}
-	
 }
