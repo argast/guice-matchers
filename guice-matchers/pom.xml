@@ -4,11 +4,15 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.github.argast.guice</groupId>
+	<parent>
+		<groupId>com.github.argast.guice</groupId>
+		<artifactId>guice-matchers-aggregator</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>guice-matchers</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>Matchers for guice</name>
+	<name>Matchers for Guice</name>
 
 	<dependencies>
 		<dependency>

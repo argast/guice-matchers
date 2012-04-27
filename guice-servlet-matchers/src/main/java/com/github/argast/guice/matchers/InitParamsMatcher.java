@@ -3,7 +3,7 @@ package com.github.argast.guice.matchers;
 import java.util.Map;
 
 import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
+import org.hamcrest.TypeSafeMatcher;
 
 import com.google.inject.servlet.ServletModuleBinding;
 

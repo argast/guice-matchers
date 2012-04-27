@@ -8,10 +8,45 @@
 	<artifactId>guice-matchers-aggregator</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Matchers for Guice</name>
+	<name>Aggregator for Guice Matchers</name>
+	<description>Aggregator for Guice Matches projects</description>
+	<url>https://github.com/argast/guice-matchers</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/argast/guice-matchers.git</connection>
+		<developerConnection>scm:git:ssh://github.com:argast/guice-matchers.git</developerConnection>
+		<url>http://github.com/argast/guice-matchers</url>
+	</scm>
 
 	<modules>
 		<module>guice-matchers</module>
 		<module>guice-servlet-matchers</module>
 	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.6</source>
+						<target>1.6</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>

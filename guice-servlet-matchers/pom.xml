@@ -4,11 +4,15 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.github.argast.guice</groupId>
+	<parent>
+		<groupId>com.github.argast.guice</groupId>
+		<artifactId>guice-matchers-aggregator</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>guice-servlet-matchers</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>Matchers for guice-servlet extension</name>
+	<name>Matchers for Guice Servlet Extension</name>
 
 	<dependencies>
 		<dependency>
@@ -22,6 +26,11 @@
 			<version>3.0</version>
 		</dependency>
 		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
@@ -31,7 +40,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

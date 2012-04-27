@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServlet;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.AllOf;
 import org.junit.Assert;
-import org.junit.internal.matchers.TypeSafeMatcher;
 
 import com.google.inject.Binding;
 import com.google.inject.Injector;
