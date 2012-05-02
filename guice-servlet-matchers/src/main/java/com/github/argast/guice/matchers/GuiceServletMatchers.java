@@ -1,6 +1,7 @@
 package com.github.argast.guice.matchers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public class GuiceServletMatchers {
 	
 	public static class MatcherBuilder {
 		
-		private List<Matcher<?>> matchers = new ArrayList<Matcher<?>>();
+		private List<Matcher<ServletModuleBinding>> matchers = new ArrayList<Matcher<ServletModuleBinding>>();
 		
 		public MatcherBuilder(Matcher<ServletModuleBinding> m) {
 			matchers.add(m);
@@ -62,7 +63,7 @@ public class GuiceServletMatchers {
 		}
 		
 		public void on(Injector injector) {
-			Assert.assertThat(new InjectorWrapper(injector), new InjectorWrapperMatcher(matchers));
+			Assert.assertThat(injector, new InjectorWrapperMatcher(matchers));
 		}
 
 		public MatcherBuilder hasInitParameters(Map<String, String> params) {
@@ -71,12 +72,35 @@ public class GuiceServletMatchers {
 		}
 	}
 	
-	private static class InjectorWrapperMatcher extends TypeSafeMatcher<InjectorWrapper> {
+	@SuppressWarnings("unchecked")
+	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding> matcher) {
+		return new InjectorWrapperMatcher(matcher);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding> matcher1, Matcher<ServletModuleBinding> matcher2) {
+		return new InjectorWrapperMatcher(matcher1, matcher2);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding> matcher1, Matcher<ServletModuleBinding> matcher2, Matcher<ServletModuleBinding> matcher3) {
+		return new InjectorWrapperMatcher(matcher1, matcher2, matcher3);
+	}
+	
+	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding>... matchers) {
+		return new InjectorWrapperMatcher(matchers);
+	}
+	
+	public static class InjectorWrapperMatcher extends TypeSafeMatcher<Injector> {
 
-		private final List<Matcher<?>> matchers;
+		private final List<Matcher<ServletModuleBinding>> matchers;
 
-		public InjectorWrapperMatcher(List<Matcher<?>> matchers) {
+		public InjectorWrapperMatcher(List<Matcher<ServletModuleBinding>> matchers) {
 			this.matchers = matchers;
+		}
+		
+		public InjectorWrapperMatcher(Matcher<ServletModuleBinding>... matchers) {
+			this.matchers = Arrays.asList(matchers);
 		}
 		
 		public void describeTo(Description description) {
@@ -87,10 +111,11 @@ public class GuiceServletMatchers {
 		}
 		
 		@Override
-		public boolean matchesSafely(InjectorWrapper injector) {
+		public boolean matchesSafely(Injector injector) {
 			boolean match = false;
-			for (ServletModuleBinding b: injector.getServletBindings()) {
-				match |= AllOf.allOf(matchers).matches(b);
+			InjectorWrapper i = new InjectorWrapper(injector);
+			for (ServletModuleBinding binding: i.getServletBindings()) {
+				match |= AllOf.allOf((Iterable)matchers).matches(binding);
 			}
 			return match;
 		}

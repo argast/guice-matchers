@@ -1,6 +1,7 @@
 package com.github.argast.guice.matchers;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 import com.google.inject.servlet.ServletModuleBinding;
@@ -20,5 +21,9 @@ public class UriMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	@Override
 	public boolean matchesSafely(ServletModuleBinding binding) {
 		return binding.matchesUri(uri);
+	}
+	
+	public static Matcher<ServletModuleBinding> serving(String uri) {
+		return new UriMatcher(uri);
 	}
 }

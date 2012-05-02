@@ -2,7 +2,10 @@ package com.github.argast.guice.matchers;
 
 import static com.github.argast.guice.matchers.GuiceServletMatchers.assertFilter;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.assertServlet;
-import static org.junit.Assert.*;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.containsBinding;
+import static com.github.argast.guice.matchers.ServletClassMatcher.forServlet;
+import static com.github.argast.guice.matchers.UriMatcher.serving;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -27,6 +30,7 @@ import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.ServletModule;
 
+@SuppressWarnings("serial")
 public class ServletModuleIntegrationTest {
 
 	private static final Map<String, String> PARAMS = new HashMap<String, String>() {{
@@ -63,6 +67,9 @@ public class ServletModuleIntegrationTest {
 			
 			bind(RegexServlet.class).asEagerSingleton();
 			serveRegex("/regex/(test|impl)/[abc]*/.*.html").with(RegexServlet.class);
+			
+			bind(RegexFilter.class).asEagerSingleton();
+			filterRegex("/regex/(test|impl)/[def]*/.*.html").through(RegexFilter.class);
 		};
 	});
 	
@@ -76,11 +83,15 @@ public class ServletModuleIntegrationTest {
 	@Test
 	public void testThatUriIsServed() throws Exception {
 		assertServlet(UriServlet.class).serves("/test/uri/*").on(injector);
+		
+		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/test/uri/*")));
 	}
 	
 	@Test
 	public void testThatSecondUriIsServed() throws Exception {
 		assertServlet(UriServlet.class).serves("/second/test/uri/*").on(injector);
+		
+		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/second/test/uri/*")));
 	}
 	
 	@Test
@@ -129,10 +140,19 @@ public class ServletModuleIntegrationTest {
 	}
 	
 	@Test(expected = AssertionError.class)
-	public void testThatAssertionErrorIsThrownWhenServletDoesNotServeRegex() throws Exception {
+	public void testThatAssertionErrorIsThrownWhenServletDoesNotServeRegexBecauseExtensionIsDifferent() throws Exception {
 		assertServlet(RegexServlet.class).serves("/regex/test/abc/index.xml").on(injector);
 	}
-
+	
+	@Test
+	public void testThatFilterFiltersRegex() throws Exception {
+		assertFilter(RegexFilter.class).filters("/regex/test/def/index.html").on(injector);
+	}
+	
+	@Test(expected = AssertionError.class)
+	public void testThatAssertionErrorIsThrownWhenFilterDoesNotFilterRegexBecauseExtensionIsDifferent() throws Exception {
+		assertFilter(RegexFilter.class).filters("/regex/test/def/index.xml").on(injector);
+	}	
 
 	private final class DummyFilterConfig implements FilterConfig {
 		public ServletContext getServletContext() {

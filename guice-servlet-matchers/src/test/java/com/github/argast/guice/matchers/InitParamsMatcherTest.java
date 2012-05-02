@@ -15,6 +15,7 @@ import com.google.inject.servlet.ServletModuleBinding;
 
 public class InitParamsMatcherTest {
 
+	@SuppressWarnings("serial")
 	private static final Map<String, String> PARAMS = new HashMap<String, String>() {{
 		put("key1", "value1");
 		put("key2", "value2");
