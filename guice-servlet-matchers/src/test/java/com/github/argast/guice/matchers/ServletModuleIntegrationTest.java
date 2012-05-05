@@ -6,7 +6,6 @@ import static com.github.argast.guice.matchers.GuiceServletMatchers.containsBind
 import static com.github.argast.guice.matchers.GuiceServletMatchers.forServlet;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.serving;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.servingPattern;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -94,6 +93,11 @@ public class ServletModuleIntegrationTest {
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenUriIsNotServed() throws Exception {
 		assertServlet(UriServlet.class).serves("/incorrect/uri/").on(injector);
+	}
+	
+	@Test(expected = AssertionError.class)
+	public void testThatAssertionErrorIsThrownWhenUriIsIncorrectUsingAssertThatSyntax() throws Exception {
+		assertThat(injector, containsBinding(forServlet(UriServlet.class), servingPattern("/incorrect/*")));
 	}
 	
 	@Test
