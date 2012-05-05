@@ -21,4 +21,8 @@ public class PatternMatcher extends TypeSafeMatcher<ServletModuleBinding> {
 	public boolean matchesSafely(ServletModuleBinding binding) {
 		return pattern.equals(binding.getPattern());
 	}
+	
+	public static TypeSafeMatcher<ServletModuleBinding> servingPattern(String pattern) {
+		return new PatternMatcher(pattern);
+	}
 }

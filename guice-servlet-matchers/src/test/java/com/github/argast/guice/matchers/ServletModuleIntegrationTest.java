@@ -5,6 +5,8 @@ import static com.github.argast.guice.matchers.GuiceServletMatchers.assertServle
 import static com.github.argast.guice.matchers.GuiceServletMatchers.containsBinding;
 import static com.github.argast.guice.matchers.ServletClassMatcher.forServlet;
 import static com.github.argast.guice.matchers.UriMatcher.serving;
+import static com.github.argast.guice.matchers.PatternMatcher.*;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -83,7 +85,10 @@ public class ServletModuleIntegrationTest {
 	@Test
 	public void testThatUriIsServed() throws Exception {
 		assertServlet(UriServlet.class).serves("/test/uri/*").on(injector);
-		
+	}
+	
+	@Test
+	public void testThatUriIsServedUsingAssertThatSyntax() throws Exception {
 		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/test/uri/*")));
 	}
 	
@@ -95,10 +100,20 @@ public class ServletModuleIntegrationTest {
 	}
 	
 	@Test
+	public void testThatSecondUriIsServedUsingAssertThatSyntax() throws Exception {
+		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/second/test/uri/*")));
+	}	
+	
+	@Test
 	public void testThatPatternIsServed() throws Exception {
 		assertServlet(UriServlet.class).servesPattern("/test/*").on(injector);
 	}
 
+	@Test
+	public void testThatPatternIsServedUsingAssertThatSyntax() throws Exception {
+		assertThat(injector, containsBinding(forServlet(UriServlet.class), servingPattern("/test/*")));
+	}
+	
 	@Test
 	public void testThatSecondPatternIsServed() throws Exception {
 		assertServlet(UriServlet.class).servesPattern("/second/test/*").on(injector);
@@ -154,6 +169,16 @@ public class ServletModuleIntegrationTest {
 		assertFilter(RegexFilter.class).filters("/regex/test/def/index.xml").on(injector);
 	}	
 
+	@Test
+	public void testThatFilterFiltersPattern() throws Exception {
+		assertFilter(UriFilter.class).filtersPattern("/to/filter/*").on(injector);
+	}
+	
+	@Test(expected = AssertionError.class)
+	public void testThatAssertionErrorIsThrownWhenIfPatternIsIncorrectPattern() throws Exception {
+		assertFilter(UriFilter.class).filtersPattern("/incorrect/path/*").on(injector);
+	}
+	
 	private final class DummyFilterConfig implements FilterConfig {
 		public ServletContext getServletContext() {
 			return null;
