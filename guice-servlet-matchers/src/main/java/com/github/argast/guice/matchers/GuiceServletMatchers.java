@@ -8,6 +8,7 @@ import javax.servlet.Filter;
 import javax.servlet.http.HttpServlet;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 
 import com.google.inject.Injector;
@@ -37,8 +38,17 @@ public class GuiceServletMatchers {
 		return new InjectorWrapperMatcher(matchers);
 	}
 	
+	public static Matcher<ServletModuleBinding> serving(String uri) {
+		return new UriMatcher(uri);
+	}
 	
+	public static Matcher<ServletModuleBinding> forServlet(Class<? extends HttpServlet> servletClass) {
+		return new ServletClassMatcher(servletClass);
+	}	
 	
+	public static TypeSafeMatcher<ServletModuleBinding> servingPattern(String pattern) {
+		return new PatternMatcher(pattern);
+	}
 	
 	private static class MatcherBuilderImpl implements ServletMatcherBuilder, FilterMatcherBuilder {
 		

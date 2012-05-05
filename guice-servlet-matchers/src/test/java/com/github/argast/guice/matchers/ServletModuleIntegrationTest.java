@@ -3,10 +3,9 @@ package com.github.argast.guice.matchers;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.assertFilter;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.assertServlet;
 import static com.github.argast.guice.matchers.GuiceServletMatchers.containsBinding;
-import static com.github.argast.guice.matchers.ServletClassMatcher.forServlet;
-import static com.github.argast.guice.matchers.UriMatcher.serving;
-import static com.github.argast.guice.matchers.PatternMatcher.*;
-import static org.junit.Assert.*;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.forServlet;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.serving;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.servingPattern;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
