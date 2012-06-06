@@ -1,11 +1,9 @@
 package com.github.argast.guice.matchers;
 
-import static com.github.argast.guice.matchers.GuiceServletMatchers.assertFilter;
-import static com.github.argast.guice.matchers.GuiceServletMatchers.assertServlet;
-import static com.github.argast.guice.matchers.GuiceServletMatchers.containsBinding;
-import static com.github.argast.guice.matchers.GuiceServletMatchers.forServlet;
-import static com.github.argast.guice.matchers.GuiceServletMatchers.serving;
-import static com.github.argast.guice.matchers.GuiceServletMatchers.servingPattern;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.filters;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.filtersPattern;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.serves;
+import static com.github.argast.guice.matchers.GuiceServletMatchers.servesPattern;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -39,7 +37,16 @@ public class ServletModuleIntegrationTest {
 		put("key2", "value2");
 	}};
 	
+	private static final Map<String, String> FILTER_PARAMS = Collections.singletonMap("filterKey", "filterValue");
+	
 	private static class UriFilter implements Filter {
+		public void destroy() {}
+		public void doFilter(ServletRequest request, ServletResponse response,
+				FilterChain chain) throws IOException, ServletException {}
+		public void init(FilterConfig filterConfig) throws ServletException {}
+	}
+
+	private static class UriFilterWithParameters implements Filter {
 		public void destroy() {}
 		public void doFilter(ServletRequest request, ServletResponse response,
 				FilterChain chain) throws IOException, ServletException {}
@@ -57,14 +64,21 @@ public class ServletModuleIntegrationTest {
 	@SuppressWarnings("serial")
 	private static class UriServlet extends HttpServlet {}
 	private static class RegexServlet extends HttpServlet {}
+	private static class UriServletWithParameters extends HttpServlet {}
 	
 	private Injector injector = Guice.createInjector(new ServletModule() {
 		protected void configureServlets() {
 			bind(UriServlet.class).asEagerSingleton();
-			serve("/test/*", "/second/test/*").with(UriServlet.class, PARAMS);
+			serve("/test/*", "/second/test/*").with(UriServlet.class);
+
+			bind(UriServletWithParameters.class).asEagerSingleton();
+			serve("/test/withParams/*").with(UriServlet.class, PARAMS);
 			
 			bind(UriFilter.class).asEagerSingleton();
-			filter("/to/filter/*").through(UriFilter.class, Collections.singletonMap("filterKey", "filterValue"));
+			filter("/to/filter/*").through(UriFilter.class);
+			
+			bind(UriFilterWithParameters.class).asEagerSingleton();
+			filter("/filter/withParams/*").through(UriFilterWithParameters.class, FILTER_PARAMS);
 			
 			bind(RegexServlet.class).asEagerSingleton();
 			serveRegex("/regex/(test|impl)/[abc]*/.*.html").with(RegexServlet.class);
@@ -82,122 +96,92 @@ public class ServletModuleIntegrationTest {
 	
 	@Test
 	public void testThatUriIsServed() throws Exception {
-		assertServlet(UriServlet.class).serves("/test/uri/*").on(injector);
-	}
-	
-	@Test
-	public void testThatUriIsServedUsingAssertThatSyntax() throws Exception {
-		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/test/uri/*")));
+		assertThat(injector, serves("/test/uri/*").with(UriServlet.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenUriIsNotServed() throws Exception {
-		assertServlet(UriServlet.class).serves("/incorrect/uri/").on(injector);
-	}
-	
-	@Test(expected = AssertionError.class)
-	public void testThatAssertionErrorIsThrownWhenUriIsIncorrectUsingAssertThatSyntax() throws Exception {
-		assertThat(injector, containsBinding(forServlet(UriServlet.class), servingPattern("/incorrect/*")));
+		assertThat(injector, serves("/incorrect/uri/").with(UriServlet.class));
 	}
 	
 	@Test
 	public void testThatSecondUriIsServed() throws Exception {
-		assertServlet(UriServlet.class).serves("/second/test/uri/*").on(injector);
+		assertThat(injector, serves("/second/test/uri/*").with(UriServlet.class));
 	}
 	
 	@Test
-	public void testThatSecondUriIsServedUsingAssertThatSyntax() throws Exception {
-		assertThat(injector, containsBinding(forServlet(UriServlet.class), serving("/second/test/uri/*")));
-	}	
-	
-	@Test
 	public void testThatPatternIsServed() throws Exception {
-		assertServlet(UriServlet.class).servesPattern("/test/*").on(injector);
+		assertThat(injector, servesPattern("/test/*").with(UriServlet.class));
+	}
+
+	@Test
+	public void testThatSecondPatternIsServed() throws Exception {
+		assertThat(injector, servesPattern("/second/test/*").with(UriServlet.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenIncorrectPatternIsAsserted() throws Exception {
-		assertServlet(UriServlet.class).servesPattern("/incorrect/pattern/*").on(injector);
+		assertThat(injector, servesPattern("/incorrect/pattern/*").with(UriServlet.class));
 	}
 
 	@Test
-	public void testThatPatternIsServedUsingAssertThatSyntax() throws Exception {
-		assertThat(injector, containsBinding(forServlet(UriServlet.class), servingPattern("/test/*")));
-	}
-	
-	@Test
-	public void testThatSecondPatternIsServed() throws Exception {
-		assertServlet(UriServlet.class).servesPattern("/second/test/*").on(injector);
-	}
-	
-	@Test
-	public void testThatSecondPatternIsServedUsingAssertThatSyntax() throws Exception {
-		assertThat(injector, containsBinding(forServlet(UriServlet.class), servingPattern("/second/test/*")));
-	}	
-	
-	@Test
 	public void testThatUriIsFiltered() throws Exception {
-		assertFilter(UriFilter.class).filters("/to/filter/*").on(injector);
+		assertThat(injector, filters("/to/filter/a").through(UriFilter.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenIncorrectUriIsAssertedForFilter() throws Exception {
-		assertFilter(UriFilter.class).filters("/incorrect/uri/*").on(injector);
-	}
-	
-	@Test
-	public void testThatServletIsInitializedWithParam() throws Exception {
-		assertServlet(UriServlet.class).hasInitParameter("key1", "value1").on(injector);
+		assertThat(injector, filters("/incorrect/uri").through(UriFilter.class));
 	}
 	
 	@Test
 	public void testThatServletIsInitializedWithParams() throws Exception {
-		assertServlet(UriServlet.class).hasInitParameters(PARAMS).on(injector);
+		assertThat(injector, serves("/second/test/123").with(UriServlet.class));
 	}
 
 	@Test(expected = AssertionError.class)
 	public void testThatServletIsNotInitializedWithParams() throws Exception {
-		assertServlet(UriServlet.class).hasInitParameters(Collections.singletonMap("key1", "value1")).on(injector);
+		assertThat(injector, serves("/test/withParams/a").with(UriServletWithParameters.class, Collections.singletonMap("key1", "value1")));
 	}
 	
 	@Test
-	public void testThatFilterIsInitializedWithParameter() throws Exception {
-		assertFilter(UriFilter.class).hasInitParameter("filterKey", "filterValue").on(injector);
+	public void testThatFilterIsInitializedWithParameters() throws Exception {
+		assertThat(injector, filters("/filter/withParams/a").through(UriFilterWithParameters.class, FILTER_PARAMS));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownIfTestChecksForNonExistingParameter() throws Exception {
-		assertFilter(UriFilter.class).hasInitParameter("noSuchKey", "noSuchValue").on(injector);
+		assertThat(injector, filters("/filter/withParams/a").through(UriFilterWithParameters.class, Collections.singletonMap("notExisting", "value")));
 	}
 	
 	@Test
 	public void testThatServletServesRegex() throws Exception {
-		assertServlet(RegexServlet.class).serves("/regex/test/abcacb/index.html").on(injector);
+		assertThat(injector, serves("/regex/test/abcacb/index.html").with(RegexServlet.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenServletDoesNotServeRegexBecauseExtensionIsDifferent() throws Exception {
-		assertServlet(RegexServlet.class).serves("/regex/test/abc/index.xml").on(injector);
+		assertThat(injector, serves("/regex/test/abc/index.xml").with(RegexServlet.class));
 	}
 	
 	@Test
 	public void testThatFilterFiltersRegex() throws Exception {
-		assertFilter(RegexFilter.class).filters("/regex/test/def/index.html").on(injector);
+		assertThat(injector, filters("/regex/test/def/index.html").through(RegexFilter.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenFilterDoesNotFilterRegexBecauseExtensionIsDifferent() throws Exception {
-		assertFilter(RegexFilter.class).filters("/regex/test/def/index.xml").on(injector);
+		assertThat(injector, filters("/regex/test/def/index.xml").through(RegexFilter.class));
 	}	
 
 	@Test
 	public void testThatFilterFiltersPattern() throws Exception {
-		assertFilter(UriFilter.class).filtersPattern("/to/filter/*").on(injector);
+		assertThat(injector, filtersPattern("/to/filter/*").through(UriFilter.class));
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void testThatAssertionErrorIsThrownWhenIfPatternIsIncorrect() throws Exception {
-		assertFilter(UriFilter.class).filtersPattern("/incorrect/path/*").on(injector);
+		assertThat(injector, filtersPattern("/incorrect/path/*").through(UriFilter.class));
 	}
 	
 	private final class DummyFilterConfig implements FilterConfig {

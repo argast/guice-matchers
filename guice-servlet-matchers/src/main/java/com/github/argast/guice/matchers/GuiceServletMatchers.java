@@ -1,6 +1,7 @@
 package com.github.argast.guice.matchers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -9,45 +10,31 @@ import javax.servlet.http.HttpServlet;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.Assert;
 
 import com.google.inject.Injector;
 import com.google.inject.servlet.ServletModuleBinding;
 
 public class GuiceServletMatchers {
 
-	public static ServletMatcherBuilder assertServlet(Class<? extends HttpServlet> servletClass) {
-		return new MatcherBuilderImpl(new ServletClassMatcher(servletClass));
+	public static ServletMatcherBuilder serves(String uri) {
+		return new MatcherBuilderImpl(new UriMatcher(uri));
 	}
 
-	public static FilterMatcherBuilder assertFilter(Class<? extends Filter> filterClass) {
-		return new MatcherBuilderImpl(new FilterClassMatcher(filterClass));
+	public static ServletMatcherBuilder servesPattern(String uri) {
+		return new MatcherBuilderImpl(new PatternMatcher(uri));
+	}
+
+	public static FilterMatcherBuilder filters(String uri) {
+		return new MatcherBuilderImpl(new UriMatcher(uri));
+	}
+
+	public static FilterMatcherBuilder filtersPattern(String uri) {
+		return new MatcherBuilderImpl(new PatternMatcher(uri));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding> matcher) {
 		return new InjectorWrapperMatcher(matcher);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding> matcher1, Matcher<ServletModuleBinding> matcher2) {
-		return new InjectorWrapperMatcher(matcher1, matcher2);
-	}
-		
-	public static Matcher<Injector> containsBinding(Matcher<ServletModuleBinding>... matchers) {
-		return new InjectorWrapperMatcher(matchers);
-	}
-	
-	public static Matcher<ServletModuleBinding> serving(String uri) {
-		return new UriMatcher(uri);
-	}
-	
-	public static Matcher<ServletModuleBinding> forServlet(Class<? extends HttpServlet> servletClass) {
-		return new ServletClassMatcher(servletClass);
-	}	
-	
-	public static TypeSafeMatcher<ServletModuleBinding> servingPattern(String pattern) {
-		return new PatternMatcher(pattern);
 	}
 	
 	private static class MatcherBuilderImpl implements ServletMatcherBuilder, FilterMatcherBuilder {
@@ -57,55 +44,41 @@ public class GuiceServletMatchers {
 		public MatcherBuilderImpl(Matcher<ServletModuleBinding> m) {
 			matchers.add(m);
 		}
-		
-		public MatcherBuilder serves(String uri) {
-			matchers.add(new UriMatcher(uri));
-			return this;
-		}
 
-		public MatcherBuilder servesPattern(String pattern) {
-			matchers.add(new PatternMatcher(pattern));
-			return this;
+		@Override
+		public Matcher<Injector> with(Class<? extends HttpServlet> servlet) {
+			return with(servlet, Collections.EMPTY_MAP);
 		}
 		
-		public MatcherBuilder filters(String uri) {
-			matchers.add(new UriMatcher(uri));
-			return this;
+		@Override
+		public Matcher<Injector> with(Class<? extends HttpServlet> servlet,
+				Map<String, String> initParameters) {
+			matchers.add(new ServletClassMatcher(servlet));
+			matchers.add(new InitParamsMatcher(initParameters));
+			return new InjectorWrapperMatcher(matchers);
 		}
 		
-		public MatcherBuilder filtersPattern(String pattern) {
-			matchers.add(new PatternMatcher(pattern));
-			return this;
-		}		
-		
-		public MatcherBuilder hasInitParameter(String key, String value) {
-			matchers.add(new InitParamMatcher(key, value));
-			return this;
+		@Override
+		public Matcher<Injector> through(Class<? extends Filter> filter) {
+			return through(filter, Collections.EMPTY_MAP);
 		}
 		
-		public void on(Injector injector) {
-			Assert.assertThat(injector, new InjectorWrapperMatcher(matchers));
-		}
-
-		public MatcherBuilder hasInitParameters(Map<String, String> params) {
-			matchers.add(new InitParamsMatcher(params));
-			return this;
+		@Override
+		public Matcher<Injector> through(Class<? extends Filter> filter,
+				Map<String, String> initParameters) {
+			matchers.add(new FilterClassMatcher(filter));
+			matchers.add(new InitParamsMatcher(initParameters));
+			return new InjectorWrapperMatcher(matchers);
 		}
 	}
 		
-	static interface MatcherBuilder {
-		MatcherBuilder hasInitParameter(String key, String value);
-		MatcherBuilder hasInitParameters(Map<String, String> params);
-		void on(Injector injector);
+	static interface ServletMatcherBuilder {
+		Matcher<Injector> with(Class<? extends HttpServlet> servlet);
+		Matcher<Injector> with(Class<? extends HttpServlet> servlet, Map<String, String> initParameters);
 	}
 	
-	static interface ServletMatcherBuilder extends MatcherBuilder {
-		MatcherBuilder serves(String uri);
-		MatcherBuilder servesPattern(String pattern);		
-	}
-	
-	static interface FilterMatcherBuilder extends MatcherBuilder {
-		MatcherBuilder filters(String uri);
-		MatcherBuilder filtersPattern(String pattern);			
+	static interface FilterMatcherBuilder {
+		Matcher<Injector> through(Class<? extends Filter> servlet);
+		Matcher<Injector> through(Class<? extends Filter> servlet, Map<String, String> initParameters);
 	}
 }
