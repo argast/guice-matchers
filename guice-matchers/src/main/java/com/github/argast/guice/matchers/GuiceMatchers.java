@@ -1,7 +1,6 @@
 package com.github.argast.guice.matchers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Description;
@@ -12,6 +11,7 @@ import org.hamcrest.core.AllOf;
 import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Scope;
 
 public class GuiceMatchers {
 	
@@ -19,14 +19,6 @@ public class GuiceMatchers {
 		return new NoScopeMatcher();
 	}
 	
-//	public static Matcher<Injector> containsBinding(Matcher<Binding<? extends Object>> matcher1) {
-//		return containsBindingInternal(matcher1);
-//	}
-//
-//	public static Matcher<Injector> binds(Matcher<Binding<?>> matcher1, Matcher<Binding<?>> matcher2) {
-//		return containsBindingInternal(matcher1, matcher2);
-//	}
-
 	public static MatcherBuilder binds(Class<?> clazz) {
 		return new MatcherBuilder(clazz);
 	}
@@ -34,6 +26,7 @@ public class GuiceMatchers {
 	static class MatcherBuilder extends TypeSafeMatcher<Injector> {
 		
 		private List<Matcher<? extends Binding<?>>> matchers = new ArrayList<Matcher<? extends Binding<?>>>();
+		private Matcher<? extends Binding<?>> scopeMatcher;
 		
 		private final Class<?> bindingClass;
 		private Class<?> targetClazz;
@@ -45,11 +38,17 @@ public class GuiceMatchers {
 		public MatcherBuilder to(Class<?> clazz) {
 			this.targetClazz = clazz;
 			matchers.add(new LinkedBindingMatcher(Key.get(bindingClass), Key.get(targetClazz)));
+			scopeMatcher = new NoScopeMatcher();
 			return this;
 		}
 		
 		public MatcherBuilder withoutScope() {
-			matchers.add(new NoScopeMatcher());
+			scopeMatcher = new NoScopeMatcher();
+			return this;
+		}
+		
+		public MatcherBuilder asEagerSingleton() {
+			scopeMatcher = new EagerSingletonMatcher();
 			return this;
 		}
 		
@@ -59,12 +58,18 @@ public class GuiceMatchers {
 		}
 		
 		public boolean matchesSafely(Injector injector) {
+			matchers.add(scopeMatcher);
+			
 			boolean result = false;
 			for (Binding<?> b: injector.getAllBindings().values()) {
-				System.out.println(b);
 				result |= new AllOf(matchers).matches(b);
 			}
 			return result;
+		}
+
+		public Matcher<Injector> in(Scope scope) {
+			scopeMatcher = new ScopeMatcher(scope);
+			return this;
 		}
 	}
 }
