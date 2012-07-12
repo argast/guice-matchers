@@ -1,15 +1,12 @@
 package com.github.argast.guice.matchers;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
 import com.google.inject.Binding;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class EagerSingletonMatcher extends TypeSafeMatcher<Binding<?>> {
 
-	@Override
 	public void describeTo(Description arg0) {
 		// TODO Auto-generated method stub
 		

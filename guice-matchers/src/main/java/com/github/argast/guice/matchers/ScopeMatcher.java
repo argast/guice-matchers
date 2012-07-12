@@ -1,38 +1,23 @@
 package com.github.argast.guice.matchers;
 
-import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
 import com.google.inject.Binding;
-import com.google.inject.Scope;
-import com.google.inject.spi.DefaultBindingScopingVisitor;
+import com.google.inject.spi.BindingScopingVisitor;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class ScopeMatcher extends TypeSafeMatcher<Binding<?>> {
 
-	private final Scope scope;
+    private BindingScopingVisitor<Boolean> visitor;
 
-	public ScopeMatcher(Scope scope) {
-		this.scope = scope;
-	}
+    public ScopeMatcher(BindingScopingVisitor<Boolean> visitor) {
+        this.visitor = visitor;
+    }
 	
 	public void describeTo(Description arg0) {
 	}
 	
 	@Override
 	public boolean matchesSafely(Binding<?> b) {
-		return b.acceptScopingVisitor(new Visitor());
-	}
-	
-	private class Visitor extends DefaultBindingScopingVisitor<Boolean> {
-		
-		@Override
-		protected Boolean visitOther() {
-			return false;
-		}
-		
-		@Override
-		public Boolean visitScope(Scope scope) {
-			return ScopeMatcher.this.scope.equals(scope);
-		}
+		return b.acceptScopingVisitor(visitor);
 	}
 }

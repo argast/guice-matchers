@@ -1,17 +1,16 @@
 package com.github.argast.guice.matchers;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.inject.Binding;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Scope;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.AllOf;
 
-import com.google.inject.Binding;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Scope;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiceMatchers {
 	
@@ -48,10 +47,10 @@ public class GuiceMatchers {
 		}
 		
 		public MatcherBuilder asEagerSingleton() {
-			scopeMatcher = new EagerSingletonMatcher();
+			scopeMatcher = new ScopeMatcher(new EagerSingletonScopingVisitor());
 			return this;
 		}
-		
+
 		public void describeTo(Description description) {
 			// TODO Auto-generated method stub
 			
@@ -68,7 +67,7 @@ public class GuiceMatchers {
 		}
 
 		public Matcher<Injector> in(Scope scope) {
-			scopeMatcher = new ScopeMatcher(scope);
+			scopeMatcher = new ScopeMatcher(new ScopeScopingVisitor(scope));
 			return this;
 		}
 	}

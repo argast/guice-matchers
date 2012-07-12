@@ -1,11 +1,9 @@
 package com.github.argast.guice.matchers;
 
-import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
-import com.google.inject.Binding;
 import com.google.inject.Key;
 import com.google.inject.spi.ConstructorBinding;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class ConstructorBindingMatcher extends TypeSafeMatcher<ConstructorBinding<?>> {
 

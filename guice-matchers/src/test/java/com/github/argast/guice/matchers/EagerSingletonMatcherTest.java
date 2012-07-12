@@ -1,14 +1,11 @@
 package com.github.argast.guice.matchers;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.junit.Test;
-
 import com.google.inject.Binding;
 import com.google.inject.spi.BindingScopingVisitor;
+import org.junit.Test;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class EagerSingletonMatcherTest {
 

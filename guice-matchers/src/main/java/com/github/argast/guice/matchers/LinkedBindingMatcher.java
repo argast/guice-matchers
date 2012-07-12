@@ -1,11 +1,9 @@
 package com.github.argast.guice.matchers;
 
-import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
-import com.google.inject.Binding;
 import com.google.inject.Key;
 import com.google.inject.spi.LinkedKeyBinding;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class LinkedBindingMatcher extends TypeSafeMatcher<LinkedKeyBinding<?>> {
 

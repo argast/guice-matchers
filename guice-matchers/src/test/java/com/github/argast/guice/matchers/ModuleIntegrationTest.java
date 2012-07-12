@@ -1,14 +1,13 @@
 package com.github.argast.guice.matchers;
 
-import static com.github.argast.guice.matchers.GuiceMatchers.binds;
-import static org.junit.Assert.assertThat;
-
-import org.junit.Test;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Scopes;
+import org.junit.Test;
+
+import static com.github.argast.guice.matchers.GuiceMatchers.binds;
+import static org.junit.Assert.assertThat;
 
 public class ModuleIntegrationTest {
 
@@ -41,7 +40,7 @@ public class ModuleIntegrationTest {
 
 	@Test
 	public void testThatClassIsBoundInScope() throws Exception {
-		assertThat(injector, binds(TestInterfaceScope.class).to(TestClassScope.class).in(Scopes.SINGLETON));		
+		assertThat(injector, binds(TestInterfaceScope.class).to(TestClassScope.class).in(Scopes.SINGLETON));
 	}
 }
 

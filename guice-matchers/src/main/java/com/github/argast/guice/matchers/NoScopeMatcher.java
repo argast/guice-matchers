@@ -1,10 +1,9 @@
 package com.github.argast.guice.matchers;
 
-import org.hamcrest.Description;
-import org.junit.internal.matchers.TypeSafeMatcher;
-
 import com.google.inject.Binding;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 public class NoScopeMatcher extends TypeSafeMatcher<Binding<?>> {
 
