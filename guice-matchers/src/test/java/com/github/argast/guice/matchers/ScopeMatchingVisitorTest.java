@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class ScopeScopingVisitorTest {
+public class ScopeMatchingVisitorTest {
 
     @Test
     public void testThatScopeVisitorReturnsTrueForMatchingScope() throws Exception {
@@ -25,7 +25,7 @@ public class ScopeScopingVisitorTest {
         assertFalse(visitorForScope(Scopes.SINGLETON).visitOther());
     }
 
-    private ScopeScopingVisitor visitorForScope(Scope scope) {
-        return new ScopeScopingVisitor(scope);
+    private ScopeMatchingVisitor visitorForScope(Scope scope) {
+        return new ScopeMatchingVisitor(scope);
     }
 }

@@ -31,9 +31,10 @@
 	</scm>
 
 	<modules>
-		<module>guice-matchers</module>
+        <module>guice-matchers-common</module>
+        <module>guice-matchers</module>
 		<module>guice-servlet-matchers</module>
-	</modules>
+    </modules>
 
 	<build>
 		<pluginManagement>

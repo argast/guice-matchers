@@ -13,27 +13,36 @@ public class ModuleIntegrationTest {
 
 	static interface TestInterface {}
 	static class TestClass implements TestInterface {}
-	static interface TestInterfaceEagerSingleton {}
+    static class NotBoundTestClass implements TestInterface {}
+    static interface TestInterfaceEagerSingleton {}
 	static class TestClassEagerSingleton implements TestInterfaceEagerSingleton {}
 	static interface TestInterfaceScope {}
 	static class TestClassScope implements TestInterfaceScope {}
 	static class OtherTestClass {}
+    static class BoundDirectlyClass {}
+
 	
 	private Injector injector = Guice.createInjector(new AbstractModule() {
 		@Override
 		protected void configure() {
 			bind(TestInterface.class).to(TestClass.class);
-			bind(TestInterfaceEagerSingleton.class).to(TestClassEagerSingleton.class).asEagerSingleton();
+		    bind(TestInterfaceEagerSingleton.class).to(TestClassEagerSingleton.class).asEagerSingleton();
 			bind(TestInterfaceScope.class).to(TestClassScope.class).in(Scopes.SINGLETON);
+            bind(BoundDirectlyClass.class);
 		}
 	});
 	
 	@Test
-	public void testThatClassIsBound() throws Exception {
+	public void testThatClassIsBoundToInterface() throws Exception {
 		assertThat(injector, binds(TestInterface.class).to(TestClass.class).withoutScope());		
 	}
-	
-	@Test
+
+    @Test(expected = AssertionError.class)
+    public void testThatExceptionIsThrownIfClassIsNotBoundToInterface() throws Exception {
+        assertThat(injector, binds(TestInterface.class).to(NotBoundTestClass.class));
+    }
+
+    @Test
 	public void testThatClassIsBoundAsEagerSingleton() throws Exception {
 		assertThat(injector, binds(TestInterfaceEagerSingleton.class).to(TestClassEagerSingleton.class).asEagerSingleton());		
 	}
@@ -42,5 +51,15 @@ public class ModuleIntegrationTest {
 	public void testThatClassIsBoundInScope() throws Exception {
 		assertThat(injector, binds(TestInterfaceScope.class).to(TestClassScope.class).in(Scopes.SINGLETON));
 	}
+
+    @Test
+    public void testThatClassIsBound() throws Exception {
+        assertThat(injector, binds(BoundDirectlyClass.class).withoutScope());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testThatAssertionErrorIsThrownWhenClassIsNotBound() throws Exception {
+        assertThat(injector, binds(NotBoundTestClass.class).withoutScope());
+    }
 }
 

@@ -7,18 +7,14 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class ConstructorBindingMatcher extends TypeSafeMatcher<ConstructorBinding<?>> {
 
-	
 	private final Key<?> key;
-	private final Class<?> targetClass;
 
-	public ConstructorBindingMatcher(Key<?> key, Class<?> targetClass) {
+	public ConstructorBindingMatcher(Key<?> key) {
 		this.key = key;
-		this.targetClass = targetClass;
 	}
 	
-	public void describeTo(Description arg0) {
-		// TODO Auto-generated method stub
-		
+	public void describeTo(Description d) {
+        d.appendText("constructor binding to " + key.toString());
 	}
 	
 	public boolean matchesSafely(ConstructorBinding<?> item) {

@@ -27,7 +27,7 @@ public class GuiceMatchers {
 		private List<Matcher<? extends Binding<?>>> matchers = new ArrayList<Matcher<? extends Binding<?>>>();
 		private Matcher<? extends Binding<?>> scopeMatcher;
 		
-		private final Class<?> bindingClass;
+		private Class<?> bindingClass;
 		private Class<?> targetClazz;
 		
 		public MatcherBuilder(Class<?> bindingClass) {
@@ -36,7 +36,6 @@ public class GuiceMatchers {
 		
 		public MatcherBuilder to(Class<?> clazz) {
 			this.targetClazz = clazz;
-			matchers.add(new LinkedBindingMatcher(Key.get(bindingClass), Key.get(targetClazz)));
 			scopeMatcher = new NoScopeMatcher();
 			return this;
 		}
@@ -52,22 +51,30 @@ public class GuiceMatchers {
 		}
 
 		public void describeTo(Description description) {
-			// TODO Auto-generated method stub
-			
+            description.appendText("\nBinding matching conditions:\n");
+            for (Matcher<?> matcher: matchers) {
+                description.appendText(" - ").appendDescriptionOf(matcher).appendText("\n");
+            }
 		}
 		
 		public boolean matchesSafely(Injector injector) {
+            if (targetClazz != null) {
+                matchers.add(new LinkedBindingMatcher(Key.get(bindingClass), Key.get(targetClazz)));
+            } else {
+                matchers.add(new ConstructorBindingMatcher(Key.get(bindingClass)));
+            }
 			matchers.add(scopeMatcher);
 			
 			boolean result = false;
 			for (Binding<?> b: injector.getAllBindings().values()) {
+                System.out.println(b);
 				result |= new AllOf(matchers).matches(b);
 			}
 			return result;
 		}
 
 		public Matcher<Injector> in(Scope scope) {
-			scopeMatcher = new ScopeMatcher(new ScopeScopingVisitor(scope));
+			scopeMatcher = new ScopeMatcher(new ScopeMatchingVisitor(scope));
 			return this;
 		}
 	}

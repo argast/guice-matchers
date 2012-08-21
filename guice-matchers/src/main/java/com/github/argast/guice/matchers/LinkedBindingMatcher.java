@@ -16,7 +16,7 @@ public class LinkedBindingMatcher extends TypeSafeMatcher<LinkedKeyBinding<?>> {
 	}
 	
 	public void describeTo(Description d) {
-		d.appendText("binding with key: ").appendValue(key);
+		d.appendText("from ").appendValue(key).appendText(" to ").appendValue(linkedKey) ;
 	}
 	
 	@Override

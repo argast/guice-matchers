@@ -3,11 +3,11 @@ package com.github.argast.guice.matchers;
 import com.google.inject.Scope;
 import com.google.inject.spi.DefaultBindingScopingVisitor;
 
-public class ScopeScopingVisitor extends DefaultBindingScopingVisitor<Boolean> {
+public class ScopeMatchingVisitor extends DefaultBindingScopingVisitor<Boolean> {
 
     private final Scope scope;
 
-    public ScopeScopingVisitor(Scope scope) {
+    public ScopeMatchingVisitor(Scope scope) {
         this.scope = scope;
     }
 

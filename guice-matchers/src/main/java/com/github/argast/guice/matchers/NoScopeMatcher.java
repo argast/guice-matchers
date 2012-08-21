@@ -10,7 +10,8 @@ public class NoScopeMatcher extends TypeSafeMatcher<Binding<?>> {
 	public NoScopeMatcher() {
 	}
 	
-	public void describeTo(Description arg0) {
+	public void describeTo(Description d) {
+        d.appendText("with no scope");
 	}
 	
 	@Override
