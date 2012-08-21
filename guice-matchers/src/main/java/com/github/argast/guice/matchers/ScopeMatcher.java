@@ -7,13 +7,14 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class ScopeMatcher extends TypeSafeMatcher<Binding<?>> {
 
-    private BindingScopingVisitor<Boolean> visitor;
+    private SelfDescribingBindingScopingVisitor visitor;
 
-    public ScopeMatcher(BindingScopingVisitor<Boolean> visitor) {
+    public ScopeMatcher(SelfDescribingBindingScopingVisitor visitor) {
         this.visitor = visitor;
     }
 	
-	public void describeTo(Description arg0) {
+	public void describeTo(Description d) {
+        visitor.describeTo(d);
 	}
 	
 	@Override

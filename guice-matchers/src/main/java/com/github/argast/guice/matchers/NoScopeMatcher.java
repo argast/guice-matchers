@@ -7,9 +7,6 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class NoScopeMatcher extends TypeSafeMatcher<Binding<?>> {
 
-	public NoScopeMatcher() {
-	}
-	
 	public void describeTo(Description d) {
         d.appendText("with no scope");
 	}
