@@ -67,7 +67,6 @@ public class GuiceMatchers {
 			
 			boolean result = false;
 			for (Binding<?> b: injector.getAllBindings().values()) {
-                System.out.println(b);
 				result |= new AllOf(matchers).matches(b);
 			}
 			return result;
